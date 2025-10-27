@@ -68,59 +68,61 @@ const EventForm: React.FC = () => {
   };
 
   const formatWhatsAppMessage = () => {
-    // Format date correctly without timezone issues
     const formatDate = (dateString: string) => {
       if (!dateString) return '';
       const [year, month, day] = dateString.split('-');
       return `${day}/${month}/${year}`;
     };
 
-    const message = `🍸 *SOLICITAÇÃO DE ORÇAMENTO - FABARDRINKS*
+    let message = `SOLICITAÇÃO DE ORÇAMENTO - FABARDRINKS\n\n`;
+    message += `DADOS PESSOAIS:\n`;
+    message += `Nome: ${formData.fullName}\n`;
+    message += `WhatsApp: ${formData.whatsapp}\n\n`;
 
-👤 *DADOS PESSOAIS:*
-• Nome: ${formData.fullName}
-• WhatsApp: ${formData.whatsapp}
+    message += `DETALHES DO EVENTO:\n`;
+    message += `Tipo: ${formData.eventType}\n`;
+    message += `Data: ${formatDate(formData.date)}\n`;
+    message += `Horário: ${formData.time}\n`;
+    message += `Local: ${formData.location}\n`;
+    message += `Número de convidados: ${formData.guestCount}\n\n`;
 
-🎉 *DETALHES DO EVENTO:*
-• Tipo: ${formData.eventType}
-• Data: ${formatDate(formData.date)}
-• Horário: ${formData.time}
-• Local: ${formData.location}
-• Número de convidados: ${formData.guestCount}
+    message += `BEBIDAS:\n`;
+    message += `${formData.beverageTypes.length > 0 ? formData.beverageTypes.join(', ') : 'Nenhum selecionado'}\n\n`;
 
-🍹 *BEBIDAS:*
-• Tipos selecionados: ${formData.beverageTypes.length > 0 ? formData.beverageTypes.join(', ') : 'Nenhum selecionado'}
+    message += `SERVIÇOS:\n`;
+    message += `${formData.services.join('\n')}\n\n`;
 
-🎯 *SERVIÇOS:*
-${formData.services.map(service => `• ${service}`).join('\n')}
+    message += `PREFERÊNCIAS DE DRINKS:\n`;
+    message += `${formData.drinkPreferences}\n\n`;
 
-🍸 *PREFERÊNCIAS DE DRINKS:*
-${formData.drinkPreferences}
+    if (formData.customization) {
+      message += `PERSONALIZAÇÃO:\n`;
+      message += `${formData.customization}\n\n`;
+    }
 
-🎨 *PERSONALIZAÇÃO:*
-${formData.customization || 'Nenhuma personalização solicitada'}
+    message += `FORMA DE PAGAMENTO:\n`;
+    message += `${formData.paymentMethod}\n\n`;
 
-💳 *FORMA DE PAGAMENTO:*
-${formData.paymentMethod}
+    message += `Aguardo o orçamento detalhado!`;
 
----
-Aguardo o orçamento detalhado! 😊`;
-
-    return encodeURIComponent(message);
+    return message;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Número do WhatsApp da FabarDrinks (substitua pelo número real)
-    const whatsappNumber = '556191362933'; // Formato: código do país + DDD + número
+
+    const whatsappNumber = '556191362933';
     const message = formatWhatsAppMessage();
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
-    
-    // Abre o WhatsApp
+
+    // Tenta diferentes formatos de URL
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const whatsappUrl = isMobile
+      ? `whatsapp://send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`
+      : `https://web.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(message)}`;
+
     window.open(whatsappUrl, '_blank');
-    
-    setSubmitted(true);
+
+    setTimeout(() => setSubmitted(true), 1000);
   };
 
   if (submitted) {
